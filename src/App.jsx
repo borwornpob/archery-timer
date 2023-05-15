@@ -44,6 +44,10 @@ const QualificationRoundTimer = () => {
 
     const closeModal = () => {
         setIsModalOpen(false);
+        clearTimeout(timerId.current);
+        setSeconds(preparationTime);
+        setPreparation(true);
+        setEnd(1);
         setIsActive(true);
     };
 
