@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const QualificationRoundTimer = () => {
     const [seconds, setSeconds] = useState(10);
@@ -8,15 +8,17 @@ const QualificationRoundTimer = () => {
     const [preparationTime, setPreparationTime] = useState(10);
     const [shootingTime, setShootingTime] = useState(90);
     const [numberOfEnds, setNumberOfEnds] = useState(10);
+    const [isActive, setIsActive] = useState(true); //
+    const timerId = useRef(null);
 
     useEffect(() => {
-        if (end > numberOfEnds) {
-            return; // End the timer after 10 ends
+        if (end > numberOfEnds || isModalOpen || !isActive) {
+            return; // End the timer after 10 ends or if settings are open or timer is not active
         }
 
         if (seconds > 0) {
-            const timerId = setTimeout(() => setSeconds(seconds - 1), 1000);
-            return () => clearTimeout(timerId);
+            timerId.current = setTimeout(() => setSeconds(seconds - 1), 1000);
+            return () => clearTimeout(timerId.current);
         } else {
             if (preparation) {
                 setSeconds(shootingTime);
@@ -27,18 +29,31 @@ const QualificationRoundTimer = () => {
                 setEnd(end + 1);
             }
         }
-    }, [seconds, end, preparation]);
+
+        return () => clearTimeout(timerId.current);
+    }, [
+        seconds,
+        end,
+        preparation,
+        isModalOpen,
+        isActive,
+        preparationTime,
+        shootingTime,
+        numberOfEnds,
+    ]);
 
     const closeModal = () => {
         setIsModalOpen(false);
+        setIsActive(true);
     };
 
     const openModal = () => {
         setIsModalOpen(true);
-        clearTimeout(timerId);
+        clearTimeout(timerId.current);
         setSeconds(preparationTime);
         setPreparation(true);
         setEnd(1);
+        setIsActive(false);
     };
 
     return (
